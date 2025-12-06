@@ -1,8 +1,8 @@
 const express = require('express');
 const morgan = require('morgan')
 const app = express();
-const db = require('./config/db');
-const UserModel = require('./models/user');
+const dbConnection = require('./config/db');
+const userModel = require('./models/user');
 
 // middleware custom
 app.use(morgan('dev'))
@@ -27,21 +27,53 @@ app.get('/', (req,res,next) => {
 })
 
 app.get('/register', (req, res) => {
-    res.render("register")
+    res.render('register')
 })
 
 app.post('/register', async (req, res) => {
+    const { username, email, password } = req.body;
 
-    const { name, email, password, confirmPassword } = req.body
-    
-    await UserModel.create({    
-        username: name,   // FIXED (username was undefined)
-        email: email,
-        password: password   
+   const newUser = await userModel.create({
+        username : username,
+        email : email,
+        password : password
+
     })
 
-    res.send('User registered successfully');   // FIXED (removed duplicate create/send)
-})
+    res.send(newUser)
+    })
+
+
+    app.get('/get-users', (req, res)=> {
+        userModel.findOne({
+            username :"iblame_suryaa"
+        }).then((users) => {
+            res.send(users)
+        })
+
+    })
+
+    app.get('/update-user', async (req,res) => {
+       await userModel.findOneAndUpdate({
+
+            username : "iblame_suryaa"
+        },
+        {
+            email: 'ab@c.com'
+        })
+         res.send("user updated")
+    })
+
+
+    app.get('/delete-user', async (req, res) => {
+        await userModel.findOneAndDelete({
+            username : "iblame_suryaa"
+        })
+
+        res.send("user deleted")
+    })
+     // FIXED (removed duplicate create/send)
+
 
 app.get('/about', (req, res) => {
     res.send("This is the about page");
